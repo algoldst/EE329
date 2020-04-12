@@ -21,7 +21,7 @@ int main(void) {
 
     // Debug variables
     set_DCO(FREQ_3_MHz);
-    int delay_time = 1e6;
+    int delay_time = 100;
 
     // Verify by routing MCLK to P4.3
     P4 -> SEL1 &=  ~BIT3;           //Set SEL1 to 0    <-- (01) == MCLK on P4.3
@@ -29,7 +29,7 @@ int main(void) {
     P4 -> DIR  |=  BIT3;            //Set P4.3 as output
 
     // Route P2.3 as GPIO
-    P2 -> SEL1 &= ~BIT3;        //Set P2.3 as GPIO
+    P2 -> SEL1 &= ~BIT3;        //Set P2.3 as GPIO      <-- SEL[1:0] = (00)
     P2 -> SEL0 &= ~BIT3;
     P2 -> DIR  |=  BIT3;        //Set P2.3 as output
 
@@ -38,7 +38,7 @@ int main(void) {
     {
         P2 -> OUT |=  BIT3;     //Turn P2.3 High
         delay_us(delay_time);
-        P2 -> OUT &=~ BIT3;     //Turn P2.3 LOW
+        P2 -> OUT &= ~BIT3;     //Turn P2.3 LOW
         delay_us(delay_time);
     }
 }
@@ -87,10 +87,8 @@ void delay_us (int delay_us) {
         loops_per_second = 150705;
     }
 
-    // Use the number of loops per second to find the loop length time
-    // This is the minimum time that a loop can take, and therefore the minimum delay time that can be requested
-    double min_us_per_loop = 1e6 / loops_per_second;
-    int num_loops_todo = ceil(delay_us/min_us_per_loop); // <-- this works, I tested it. ( ceil() needs the #include <math.h> to run, but then it works fine)
+    // Use loops/sec to find the number of loops to run
+    int num_loops_todo = ceil(delay_us * (loops_per_second * 1e-6));
 
     // Run the delay
     int i;
